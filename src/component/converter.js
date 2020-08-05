@@ -130,7 +130,7 @@ class Converter extends React.Component {
   render() {
     return (
       <div className="container">
-        <h1>Currency Converter</h1>
+        <h1>Convert Currency</h1>
         
         <div>
           
