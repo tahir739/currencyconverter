@@ -1,6 +1,6 @@
 
 import React, {Component} from "react";
-import Converter from "./component/converter.js";
+import Converter from "./component/converter/converter.js";
 
 class App extends Component {
   render () {

@@ -1,0 +1,14 @@
+.currency-converter {
+    position: fixed;
+    top: 30%;
+    left: 30%;
+    right: 30%;
+}
+
+.converter-btn{
+    margin-top: 16px;;
+}
+
+.symbol {
+    color: #666;
+}

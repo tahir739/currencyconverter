@@ -1,9 +1,9 @@
-import React, { useState } from 'react';
+import React from 'react';
+import { API_URL_LATEST, API_URL_SYMBOLS } from "../common/Constants";
+import {GET} from '../common/Api';
+import './Converter.css';
 
 class Converter extends React.Component {
-
-  key = "d546ebfb2ca5ab2bb7a0cfeff54c35cf";
-  endpoint = "http://data.fixer.io/api/latest?" + this.key;
   rates;
   symbols;
 
@@ -16,23 +16,7 @@ class Converter extends React.Component {
       amount: 0,
       convertedAount: 0,
       currencyKeys: []
-
-
-
     }
-  }
-
-  ReceiveData(data) {
-    console.log(data);
-  }
-
-  ReceiveError(err) {
-    console.log(err);
-  }
-
-  ReceiveStream(res) {
-    var jsonResult = res.json(); 
-    return jsonResult;
   }
 
   componentDidMount() {
@@ -41,51 +25,33 @@ class Converter extends React.Component {
   }
 
   setupCurrencyRates = () => {
-
-    var p1 = fetch("http://data.fixer.io/api/latest?access_key=d546ebfb2ca5ab2bb7a0cfeff54c35cf");
-    var p2 = p1.then(this.ReceiveStream); //promise<json>
-
-    p2.then(
-      data => {
-        console.log(data);
-        console.log(data.rates[this.state.fromCurrency]);
-        this.rates = data.rates;
-      },
-      err => {
-        console.log(err);
-      }
+    GET(API_URL_LATEST).then(
+      data => this.rates = data.rates,
+      err => console.log(err)
     );
   }
 
   example = () => {
-    console.log(this.props);
-    var p1 = fetch("http://data.fixer.io/api/symbols?access_key=d546ebfb2ca5ab2bb7a0cfeff54c35cf");
-
-    var p2 = p1.then(this.ReceiveStream); 
-
-    p2.then(
+    GET(API_URL_SYMBOLS).then(
       data => {
-        console.log(data);
-        console.log(data.symbols[this.state.fromCurrency]);
         this.symbols = data.symbols;
         this.setCurrencyKeys(data.symbols);
 
         this.setDropdownFromCurrency(this.state.currencyKeys[0]);
         this.setDropdownToCurrency(this.state.currencyKeys[0]);
       },
-      err => {
-        console.log(err);
-      }
+      err => console.log(err)      
     );
 
   }
 
   setDropdownFromCurrency = (val) => {
-    this.setState({ fromCurrency: val });
+    this.setState({ fromCurrency: val.key ? val.key: val });
   }
 
   setDropdownToCurrency = (val) => {
-    this.setState({ toCurrency: val });
+    
+    this.setState({ toCurrency: val.key ? val.key: val });
   }
 
   setCurrencyKeys = (data) => {
@@ -95,16 +61,12 @@ class Converter extends React.Component {
         value: data[d]
       };
     });
-    this.setState({ currencyKeys: res }); 
-    setTimeout(() => {
-      console.log(this.state.currencyKeys);
-      console.log(Object.keys(this.state.currencyKeys));
-    }, 300);
+    this.setState({ currencyKeys: res });  
   }
 
   selectHandler = (event) => {
     if (event.target.id === "c1") {
-       this.setDropdownFromCurrency(event.target.value);
+      this.setDropdownFromCurrency(event.target.value);
     }
     else {
       if (event.target.id === "c2") {
@@ -116,52 +78,52 @@ class Converter extends React.Component {
         }
       }
     }
-    console.log(this.state)
   }
 
   convertCurrency = (evt) => {
     var eu = this.state.amount / this.rates[this.state.fromCurrency];
-
-    this.setState({ convertedAount: this.rates[this.state.toCurrency] * eu });
+    this.setState({ convertedAount: (this.rates[this.state.toCurrency] * eu).toFixed(2) });
   }
 
 
 
   render() {
     return (
+      <div className="currency-converter">
       <div className="container">
         <h1>Convert Currency</h1>
-        
-        <div>
-          
+
+        <div className="form-group">
+
           <label htmlFor="c1" > currency to convert from: </label>
           <select id="c1" className="form-control" value={this.state.fromCurrency} onChange={event => this.selectHandler(event)}>
             {this.state.currencyKeys.map(d => <option value={d.key}>{d.value}</option>)}
           </select>
-          
-       </div>
 
-        <div>
+        </div>
+
+        <div className="form-group">
           <label htmlFor="c2" > currency to convert to: </label>
           <select id="c2" className="form-control" value={this.state.toCurrency} onChange={event => this.selectHandler(event)}>
             {this.state.currencyKeys.map(obj => <option value={obj.key}>{obj.value}</option>)}
           </select>
-          
+
         </div>
 
-        <div>
+        <div className="form-group">
           <label htmlFor="c3"> currency amount: </label>
           <input id="c3" className="form-control" value={this.state.amount} onChange={event => this.selectHandler(event)} />
         </div>
 
-        <div>
-          <button className="btn btn-success" onClick={this.convertCurrency}> convert now</button>
+        <div className="form-group">
+          <button className="btn btn-success converter-btn" onClick={this.convertCurrency}> convert now</button>
         </div>
-        <div>
-          {this.state.convertedAount !== 0 ? ("converted amount is " + this.state.convertedAount) : ""}
+        <hr />
+        <div className="form-group">
+        <h4>{this.state.convertedAount !== 0 ? ("converted amount is: ") : ""} <span className="symbol">{this.state.convertedAount !== 0 && (this.state.convertedAount + " /- " + this.state.toCurrency)}</span></h4>
         </div>
       </div>
-
+      </div>
 
     )
   }
